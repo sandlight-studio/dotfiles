@@ -1,0 +1,5 @@
+_sandlight_config_home="${XDG_CONFIG_HOME:-$HOME/.config}/sandlight-dotfiles"
+[ -r "$_sandlight_config_home/common.sh" ] && . "$_sandlight_config_home/common.sh"
+[ -r "$_sandlight_config_home/local.zsh" ] && . "$_sandlight_config_home/local.zsh"
+unset _sandlight_config_home
+

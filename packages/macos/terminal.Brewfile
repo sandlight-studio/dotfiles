@@ -1,0 +1,3 @@
+brew "starship"
+brew "tmux"
+
