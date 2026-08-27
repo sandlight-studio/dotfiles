@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here.
 
+## [0.1.1] - 2026-08-27
+
+### Changed
+
+- Replaced the README Mermaid diagram with a real terminal screenshot.
+
 ## [0.1.0] - 2026-08-27
 
 ### Added
