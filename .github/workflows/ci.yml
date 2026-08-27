@@ -41,3 +41,21 @@ jobs:
       - name: Scan complete history
         run: docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.30.1 git /repo --redact --no-banner
 
+  wsl2:
+    name: WSL2 smoke test
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install Ubuntu 24.04 on WSL2
+        shell: pwsh
+        run: |
+          wsl --set-default-version 2
+          wsl --install --distribution Ubuntu-24.04 --no-launch --web-download
+          wsl --set-version Ubuntu-24.04 2
+          wsl --list --verbose
+      - name: Run smoke test inside WSL2
+        shell: pwsh
+        run: |
+          $workspace = (wsl --distribution Ubuntu-24.04 --user root -- wslpath -a "$env:GITHUB_WORKSPACE").Trim()
+          if (-not $workspace) { throw "Unable to resolve the workspace path inside WSL2" }
+          wsl --distribution Ubuntu-24.04 --user root -- bash -lc "apt-get update && apt-get install -y git && cd '$workspace' && bash scripts/tests/test-wsl-smoke.sh"
