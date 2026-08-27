@@ -14,7 +14,7 @@ A small, public-safe dotfiles toolkit for macOS, Ubuntu/Debian Linux, and WSL2. 
 | Ubuntu 24.04+ | Supported | apt |
 | Debian 12+ | Supported | apt |
 | WSL2 with Ubuntu/Debian | Supported | apt |
-| Native Windows | Not supported in 0.1.0 | — |
+| Native Windows | Not supported | — |
 
 ## Quick start
 
