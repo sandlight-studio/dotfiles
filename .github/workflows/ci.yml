@@ -56,6 +56,4 @@ jobs:
       - name: Run smoke test inside WSL2
         shell: pwsh
         run: |
-          $workspace = (wsl --distribution Ubuntu-24.04 --user root -- wslpath -a "$env:GITHUB_WORKSPACE").Trim()
-          if (-not $workspace) { throw "Unable to resolve the workspace path inside WSL2" }
-          wsl --distribution Ubuntu-24.04 --user root -- bash -lc "apt-get update && apt-get install -y git && cd '$workspace' && bash scripts/tests/test-wsl-smoke.sh"
+          wsl --distribution Ubuntu-24.04 --user root --cd "$env:GITHUB_WORKSPACE" -- bash -lc "apt-get update && apt-get install -y git && bash scripts/tests/test-wsl-smoke.sh"
