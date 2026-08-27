@@ -2,6 +2,23 @@
 
 A small, public-safe dotfiles toolkit for macOS, Ubuntu/Debian Linux, and WSL2. It uses defensive Bash, opt-in modules, and local overrides instead of machine-specific profiles.
 
+## How it works
+
+```mermaid
+flowchart TD
+    A["./install.sh --dry-run"] --> B{"Dry run?"}
+    B -->|Yes| C["Print planned changes<br/>nothing is modified"]
+    B -->|No| D["Load optional config.env<br/>(XDG config directory)"]
+    D --> E["Detect platform:<br/>macOS · Ubuntu/Debian · WSL2"]
+    E --> F["Apply opt-in modules:<br/>shell · git · cli · terminal · proxy"]
+    F --> G["Create managed links,<br/>shell blocks, and Git include"]
+    F --> H["Back up conflicting files<br/>(timestamped, state directory)"]
+    F --> I["Record every owned path<br/>in the state manifest"]
+    G --> J["./uninstall.sh restores<br/>only project-owned content"]
+    H --> J
+    I --> J
+```
+
 ## Platform support
 
 | Platform | Status | Package manager |
