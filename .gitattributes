@@ -1,0 +1,3 @@
+# Force LF line endings on every platform so shell scripts work when the
+# repository is checked out on Windows and used through WSL2.
+* text=auto eol=lf
