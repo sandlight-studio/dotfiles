@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# Name the failing command and line instead of exiting silently under set -e.
+set -E
+trap 'printf "test failed: %s:%s: %s (exit %s)\n" "${BASH_SOURCE[0]}" "$LINENO" "$BASH_COMMAND" "$?" >&2' ERR
+
 assert_equal() {
   local actual="$1" expected="$2" message="${3:-values differ}"
   if [[ "$actual" != "$expected" ]]; then
