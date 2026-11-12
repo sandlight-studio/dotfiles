@@ -1,5 +1,23 @@
 _sandlight_config_home="${XDG_CONFIG_HOME:-$HOME/.config}/sandlight-dotfiles"
+
+# Duplicate-free path arrays. FPATH stays shell-local: Homebrew's shellenv
+# exports it, and an inherited FPATH that differs from the one recorded in the
+# completion dump makes every nested shell rebuild the dump.
+typeset -U path PATH fpath FPATH
+typeset +x FPATH
+
+# Completion, unless a framework loaded earlier in ~/.zshrc already ran
+# compinit. It must run before zoxide and fzf initialize in common.sh.
+if (( ! $+functions[compdef] )); then
+  _sandlight_cache_home="${XDG_CACHE_HOME:-$HOME/.cache}/sandlight-dotfiles"
+  [[ -d "$_sandlight_cache_home" ]] || mkdir -p "$_sandlight_cache_home"
+  autoload -Uz compinit
+  # -i skips insecure completion directories instead of prompting at startup.
+  compinit -i -d "$_sandlight_cache_home/zcompdump-$ZSH_VERSION"
+  unset _sandlight_cache_home
+fi
+
+[ -r "$_sandlight_config_home/history.zsh" ] && . "$_sandlight_config_home/history.zsh"
 [ -r "$_sandlight_config_home/common.sh" ] && . "$_sandlight_config_home/common.sh"
 [ -r "$_sandlight_config_home/local.zsh" ] && . "$_sandlight_config_home/local.zsh"
 unset _sandlight_config_home
-

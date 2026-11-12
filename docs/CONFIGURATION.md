@@ -17,6 +17,28 @@ The shell module loads these optional, untracked files:
 
 Use them for aliases, environment variables, SDK initialization, and machine-specific PATH entries.
 
+The zsh payload runs `compinit` unless a framework earlier in `~/.zshrc` already did, and keeps the completion dump in `${XDG_CACHE_HOME:-$HOME/.cache}/sandlight-dotfiles/`.
+
+## History filter
+
+The shell module keeps commands that carry a secret value out of shell history. It is on by default. In zsh, a command is dropped when it contains:
+
+- a name ending in `key`, `token`, `secret`, `password`, `credential`, or `auth` followed by `=` or `:` (`API_KEY=...`, `--token=...`, `X-Api-Key: ...`);
+- a secret-taking flag followed by a value (`--password hunter2`);
+- an `Authorization: Bearer` or `Basic` header;
+- a well-known token prefix such as `ghp_`, `github_pat_`, `glpat-`, `xoxb-`, `AKIA`, `AIza`, or `sk-`;
+- `docker login`, `npm login`, `op read`, or `op item get`.
+
+Commands that only mention such words, like `ssh-keygen` or `rg token src/`, are kept. Bash uses a smaller, case-sensitive `HISTIGNORE` list and adds `ignorespace` to `HISTCONTROL`. In both shells a command typed with a leading space is not recorded.
+
+Set `SANDLIGHT_HISTORY_FILTER=0` to turn the filter off: in `local.zsh` for zsh, or in `~/.bashrc` before the managed block for Bash.
+
+## Git
+
+The managed include is added at the top of the global Git config, so a value you set there overrides the project default. It sets `init.defaultBranch`, `user.useConfigOnly`, `pull.ff=only`, `fetch.prune`, `push.autoSetupRemote`, `merge.conflictStyle=zdiff3`, and delta as pager with `less` as the fallback. It never sets an identity, signing, or credentials.
+
+The project ignore list is linked to `${XDG_CONFIG_HOME:-$HOME/.config}/git/ignore`, which Git reads when `core.excludesFile` is unset. An existing file at that path is kept as it is.
+
 ## Proxy settings
 
 The proxy module configures environment variables only. It does not install a proxy client or change operating-system network settings.

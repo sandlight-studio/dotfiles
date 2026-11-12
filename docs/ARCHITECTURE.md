@@ -12,7 +12,7 @@ The installer is compatible with Bash 3.2 and uses no associative arrays.
 
 ## Ownership model
 
-Managed configuration files are symlinked to the repository. Existing targets are moved into timestamped backups before replacement. Shell startup files use marked blocks so existing user content remains intact. Git uses a single include entry and does not own the user's global identity.
+Managed configuration files are symlinked to the repository. Existing targets are moved into timestamped backups before replacement. Shell startup files use marked blocks so existing user content remains intact. Git uses a single include entry, prepended so the user's own settings win, and does not own the user's global identity. Files the user may already own, such as Git's XDG ignore file, are linked only when the path is free.
 
 The state manifest uses tab-separated records for links, backups, shell blocks, and the Git include. Uninstall consults that manifest and refuses to remove targets that are no longer owned by the project.
 
@@ -20,5 +20,5 @@ The state manifest uses tab-separated records for links, backups, shell blocks, 
 
 Package manifests are separated by platform and module. macOS uses module-specific Brewfiles. Ubuntu, Debian, and WSL2 use newline-separated apt package lists. WSL2 applies the Linux manifest and then an optional WSL-specific supplement.
 
-Package changes are intentionally not rolled back by `uninstall.sh`.
+A package failure is reported and does not stop configuration, because every module guards its optional tools; `--strict-packages` makes it fatal. Package changes are intentionally not rolled back by `uninstall.sh`.
 

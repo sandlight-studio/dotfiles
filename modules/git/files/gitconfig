@@ -1,16 +1,29 @@
+# Identity-free defaults. This file is included at the top of the global Git
+# config, so any value the user sets there takes precedence.
 [init]
     defaultBranch = main
+[user]
+    # Refuse to guess an identity from the host name; commits need an
+    # explicitly configured user.name and user.email.
+    useConfigOnly = true
 [pull]
     ff = only
 [fetch]
     prune = true
 [push]
     autoSetupRemote = true
+[merge]
+    conflictStyle = zdiff3
 [core]
-    excludesFile = ~/.config/sandlight-dotfiles/gitignore
+    # Git runs the pager through sh, so a machine without delta still gets
+    # plain less instead of "delta: command not found".
+    pager = "if command -v delta >/dev/null 2>&1; then delta; else less -FRX; fi"
+[interactive]
+    diffFilter = "if command -v delta >/dev/null 2>&1; then delta --color-only; else cat; fi"
+[delta]
+    navigate = true
 [alias]
     branches = branch --sort=-committerdate
     last = log -1 --stat
     graph = log --graph --decorate --oneline --all
     unstage = restore --staged
-

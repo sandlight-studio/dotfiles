@@ -5,6 +5,7 @@
 - Stabilize macOS, Ubuntu/Debian, and WSL2 installation.
 - Expand test fixtures for distribution and package-manager differences.
 - Add more neutral module examples without introducing identity or company profiles.
+- Consider an opt-in supply-chain module that sets release cooldowns for npm, pnpm, and uv.
 
 ## Later
 

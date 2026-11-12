@@ -139,6 +139,29 @@ link_managed() {
   log_info "Linked $target"
 }
 
+# Link source to target only when nothing else lives there. Used for files
+# the user may already own (such as Git's XDG ignore file): an existing target
+# is left alone with a warning instead of being moved into a backup.
+link_managed_if_free() {
+  local source="$1" target="$2"
+  [[ -e "$source" ]] || die "managed source does not exist: $source"
+
+  if [[ -L "$target" && "$(readlink "$target")" == "$source" ]]; then
+    record_state link "$target" "$source"
+    log_info "Already linked $target"
+    return 0
+  fi
+  if [[ -e "$target" || -L "$target" ]]; then
+    log_warn "keeping existing $target; not linking the project copy"
+    return 0
+  fi
+
+  run_command mkdir -p "$(dirname "$target")"
+  run_command ln -s "$source" "$target"
+  record_state link "$target" "$source"
+  log_info "Linked $target"
+}
+
 write_generated_file() {
   local target="$1" content="$2"
   if [[ -f "$target" && "$(cat "$target")" == "$content" ]]; then
@@ -156,15 +179,30 @@ write_generated_file() {
   fi
 }
 
+# Copy source to destination without the managed block. The single blank line
+# ensure_shell_block puts in front of the block is dropped with it, so repeated
+# install and uninstall cycles leave the file byte-for-byte unchanged.
 strip_managed_block() {
   local source="$1" destination="$2"
   local begin='# >>> sandlight-dotfiles >>>'
   local end='# <<< sandlight-dotfiles <<<'
   awk -v begin="$begin" -v end="$end" '
-    $0 == begin { skipping = 1; next }
-    $0 == end { skipping = 0; next }
-    !skipping { print }
+    skipping { if ($0 == end) skipping = 0; next }
+    $0 == begin { held = 0; skipping = 1; next }
+    held { print ""; held = 0 }
+    $0 == "" { held = 1; next }
+    { print }
+    END { if (held) print "" }
   ' "$source" >"$destination"
+}
+
+# Replace target's content in place. Writing through the existing file keeps
+# its mode, owner, and hard links, which mv'ing a mktemp file (mode 0600) over
+# it would not.
+replace_file_content() {
+  local source="$1" target="$2"
+  cat "$source" >"$target"
+  rm -f "$source"
 }
 
 ensure_shell_block() {
@@ -203,7 +241,7 @@ ensure_shell_block() {
     printf '%s\n' "$source_line"
     printf '%s\n' "$end"
   } >>"$tmp"
-  mv "$tmp" "$target"
+  replace_file_content "$tmp" "$target"
   record_state block "$target" "$begin"
   log_info "Updated shell hook in $target"
 }
@@ -221,7 +259,7 @@ remove_shell_block() {
   tmp="$(mktemp "$DOTFILES_STATE_HOME/unblock.XXXXXX")"
   strip_managed_block "$target" "$tmp"
   if grep -q '[^[:space:]]' "$tmp"; then
-    mv "$tmp" "$target"
+    replace_file_content "$tmp" "$target"
   else
     rm -f "$tmp" "$target"
   fi

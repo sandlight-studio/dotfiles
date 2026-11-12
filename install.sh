@@ -17,6 +17,7 @@ Options:
   --config FILE       Read configuration from FILE.
   --modules CSV       Override configured modules.
   --with-packages     Install enabled modules' package manifests.
+  --strict-packages   With --with-packages, stop at the first package failure.
   --dry-run           Print changes without applying them.
   -h, --help          Show this help.
 USAGE
@@ -25,6 +26,7 @@ USAGE
 CONFIG_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/sandlight-dotfiles/config.env"
 CLI_MODULES=""
 WITH_PACKAGES=0
+STRICT_PACKAGES=0
 DRY_RUN=0
 
 while [[ "$#" -gt 0 ]]; do
@@ -41,6 +43,10 @@ while [[ "$#" -gt 0 ]]; do
       ;;
     --with-packages)
       WITH_PACKAGES=1
+      shift
+      ;;
+    --strict-packages)
+      STRICT_PACKAGES=1
       shift
       ;;
     --dry-run)
@@ -66,9 +72,17 @@ write_generated_file "$DOTFILES_CONFIG_HOME/active-config" "$CONFIG_FILE"
 declare -a enabled_modules
 IFS=',' read -r -a enabled_modules <<<"$DOTFILES_MODULES"
 
+# A failed package install does not stop configuration from being applied:
+# every module guards its optional tools, so a partial bootstrap still yields
+# a working shell. The summary at the end lists what to re-run.
+PACKAGE_FAILURES=""
 if [[ "$WITH_PACKAGES" == "1" ]]; then
   for module in "${enabled_modules[@]}"; do
-    install_packages_for_module "$module"
+    if ! install_packages_for_module "$module"; then
+      [[ "$STRICT_PACKAGES" == "0" ]] || die "package installation failed for $module: $PACKAGE_FIX_HINT"
+      log_warn "package installation failed for $module; continuing"
+      PACKAGE_FAILURES="${PACKAGE_FAILURES}${module}"$'\t'"${PACKAGE_FIX_HINT}"$'\n'
+    fi
   done
 fi
 
@@ -83,4 +97,12 @@ done
 log_info "Installation complete: $DOTFILES_MODULES"
 if [[ "$DRY_RUN" == "0" ]]; then
   log_info "State manifest: $DOTFILES_STATE_FILE"
+fi
+if [[ -n "$PACKAGE_FAILURES" ]]; then
+  log_warn "some packages were not installed; re-run:"
+  while IFS=$'\t' read -r module hint; do
+    [[ -n "$module" ]] || continue
+    printf '  %s: %s\n' "$module" "$hint" >&2
+  done <<<"$PACKAGE_FAILURES"
+  exit 2
 fi

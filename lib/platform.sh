@@ -40,7 +40,8 @@ install_brew_packages() {
   local brewfile="$REPO_ROOT/packages/macos/$module.Brewfile"
   [[ -s "$brewfile" ]] || return 0
   command -v brew >/dev/null 2>&1 || die "Homebrew is required for --with-packages on macOS"
-  run_command brew bundle install --file="$brewfile"
+  PACKAGE_FIX_HINT="brew bundle install --file=$(printf '%q' "$brewfile")"
+  run_command brew bundle install --file="$brewfile" || return 1
 }
 
 append_apt_manifest() {
@@ -63,17 +64,23 @@ install_apt_packages() {
     append_apt_manifest "$REPO_ROOT/packages/wsl/$module.txt"
   fi
   [[ -n "$APT_PACKAGES" ]] || return 0
+  PACKAGE_FIX_HINT="sudo apt-get install -y $APT_PACKAGES"
   if [[ "${DOTFILES_APT_UPDATED:-0}" != "1" ]]; then
-    run_command sudo apt-get update
+    run_command sudo apt-get update || return 1
     DOTFILES_APT_UPDATED=1
   fi
   # Package names are validated before intentional word splitting.
   # shellcheck disable=SC2086
-  run_command sudo apt-get install -y $APT_PACKAGES
+  run_command sudo apt-get install -y $APT_PACKAGES || return 1
 }
 
+# Returns non-zero when the package manager fails, leaving the command that
+# would finish the job in PACKAGE_FIX_HINT. Missing prerequisites still die.
 install_packages_for_module() {
   local module="$1"
+  # Read by install.sh for the end-of-run summary.
+  # shellcheck disable=SC2034
+  PACKAGE_FIX_HINT=""
   case "$DOTFILES_PLATFORM" in
     macos) install_brew_packages "$module" ;;
     linux|wsl) install_apt_packages "$module" ;;
