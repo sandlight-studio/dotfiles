@@ -1,5 +1,9 @@
+# shellcheck shell=bash
 _sandlight_config_home="${XDG_CONFIG_HOME:-$HOME/.config}/sandlight-dotfiles"
+# shellcheck source=/dev/null
+[ -r "$_sandlight_config_home/history.bash" ] && . "$_sandlight_config_home/history.bash"
+# shellcheck source=/dev/null
 [ -r "$_sandlight_config_home/common.sh" ] && . "$_sandlight_config_home/common.sh"
+# shellcheck source=/dev/null
 [ -r "$_sandlight_config_home/local.bash" ] && . "$_sandlight_config_home/local.bash"
 unset _sandlight_config_home
-

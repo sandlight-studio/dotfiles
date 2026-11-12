@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
 install_shell() {
-  link_managed "$REPO_ROOT/modules/shell/files/common.sh" "$DOTFILES_CONFIG_HOME/common.sh"
-  link_managed "$REPO_ROOT/modules/shell/files/bashrc" "$DOTFILES_CONFIG_HOME/bashrc"
-  link_managed "$REPO_ROOT/modules/shell/files/zshrc" "$DOTFILES_CONFIG_HOME/zshrc"
+  local name
+  for name in common.sh bashrc zshrc history.bash history.zsh; do
+    link_managed "$REPO_ROOT/modules/shell/files/$name" "$DOTFILES_CONFIG_HOME/$name"
+  done
   ensure_shell_block "$HOME/.bashrc" bash
   ensure_shell_block "$HOME/.zshrc" zsh
 }
-
