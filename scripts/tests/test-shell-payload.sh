@@ -36,8 +36,8 @@ dropped=(
   "mytool --token abc123 run"
   "mytool --password=hunter2"
   "echo $openai_key"
-  "git clone https://$github_token@github.com/a/b"
-  "op read op://vault/item/field"
+  "git clone https://$github_token@example.com/a/b"
+  "op read vault/item/field"
 )
 
 # —— zsh: full filter ——
@@ -103,7 +103,7 @@ done
 for line in "export API_KEY=abc123" "GITHUB_TOKEN=abc gh api user" \
   "curl -H \"Authorization: Bearer abc\" https://example.com" \
   "mytool --token abc123 run" "mytool --password=hunter2" \
-  "git clone https://$github_token@github.com/a/b" "op read op://vault/item/field"; do
+  "git clone https://$github_token@example.com/a/b" "op read vault/item/field"; do
   if ! bash_ignored "$line"; then
     printf 'bash wrongly kept: %s\n' "$line" >&2
     exit 1

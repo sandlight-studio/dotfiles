@@ -41,7 +41,7 @@ Package installation is always explicit:
 ./install.sh --with-packages
 ```
 
-The installer does not bootstrap Homebrew. Install Homebrew first on macOS if package installation is requested.
+The installer does not bootstrap Homebrew. Install Homebrew first on macOS if package installation is requested. A failed package install does not stop configuration from being applied; the run exits with status 2 and prints the command to re-run. Add `--strict-packages` to stop at the first failure instead.
 
 ## Modules
 
@@ -49,10 +49,10 @@ The default module set is `shell,git,cli`.
 
 | Module | Behavior |
 | --- | --- |
-| `shell` | Adds managed Bash and Zsh source blocks with portable PATH helpers and local extension hooks. |
-| `git` | Adds an identity-free Git include without changing name, email, signing, or credentials. |
-| `cli` | Provides aliases and integration for portable command-line tools when installed. |
-| `terminal` | Installs neutral tmux and Starship configuration. |
+| `shell` | Adds managed Bash and Zsh source blocks with portable PATH helpers, zsh completion, a history filter for secret values, and local extension hooks. |
+| `git` | Adds an identity-free Git include, placed first so your own settings win, without changing name, email, signing, or credentials. |
+| `cli` | Provides aliases and fzf, zoxide, eza, and bat integration for tools that are installed. |
+| `terminal` | Installs neutral tmux (vi copy mode, per-platform clipboard) and Starship configuration. |
 | `proxy` | Provides opt-in, provider-neutral `proxy_on`, `proxy_off`, and `proxy_status` helpers. |
 
 Select modules in `config.env` or for one installation:
