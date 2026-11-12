@@ -12,7 +12,8 @@ if (( ! $+functions[compdef] )); then
   _sandlight_cache_home="${XDG_CACHE_HOME:-$HOME/.cache}/sandlight-dotfiles"
   [[ -d "$_sandlight_cache_home" ]] || mkdir -p "$_sandlight_cache_home"
   autoload -Uz compinit
-  compinit -d "$_sandlight_cache_home/zcompdump-$ZSH_VERSION"
+  # -i skips insecure completion directories instead of prompting at startup.
+  compinit -i -d "$_sandlight_cache_home/zcompdump-$ZSH_VERSION"
   unset _sandlight_cache_home
 fi
 
