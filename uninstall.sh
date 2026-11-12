@@ -56,6 +56,11 @@ while IFS=$'\t' read -r kind target detail; do
     git_include)
       if git config --global --fixed-value --get-all include.path "$detail" >/dev/null 2>&1; then
         run_command git config --global --fixed-value --unset-all include.path "$detail"
+        # --unset-all keeps an empty [include] header; drop it only when the
+        # user has no include settings of their own.
+        if ! is_dry_run && ! git config --global --get-regexp '^include\.' >/dev/null 2>&1; then
+          git config --global --remove-section include 2>/dev/null || true
+        fi
         log_info "Removed Git include $detail"
       fi
       ;;

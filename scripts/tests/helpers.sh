@@ -30,3 +30,8 @@ assert_not_contains() {
   fi
 }
 
+
+# Permission bits of a file, portable across GNU and BSD stat.
+file_mode() {
+  stat -c '%a' "$1" 2>/dev/null || stat -f '%Lp' "$1"
+}
