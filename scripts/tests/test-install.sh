@@ -98,6 +98,7 @@ assert_equal "$(cksum <"$TEST_HOME/.bashrc")" "$original_bashrc" 'bashrc not res
 assert_equal "$(grep -c '^\[include\]' "$TEST_HOME/.gitconfig" || true)" 0 'empty [include] section left behind'
 assert_equal "$(HOME="$TEST_HOME" git config --global merge.conflictStyle)" diff3
 [[ ! -e "$TEST_CONFIG_HOME/git/ignore" ]] || { printf 'Git ignore link left behind\n' >&2; exit 1; }
+[[ ! -e "$TEST_CONFIG_HOME/git" ]] || { printf 'empty Git config directory left behind\n' >&2; exit 1; }
 
 # Repeated install/uninstall cycles must not accumulate blank lines.
 for _ in 1 2 3; do

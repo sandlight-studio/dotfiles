@@ -80,6 +80,14 @@ if [[ "$DRY_RUN" == "0" && "$UNINSTALL_INCOMPLETE" == "0" ]]; then
   history_file="$DOTFILES_STATE_HOME/uninstalled-$(date +%Y%m%d-%H%M%S).tsv"
   mv "$DOTFILES_STATE_FILE" "$history_file"
   rmdir "$DOTFILES_CONFIG_HOME" 2>/dev/null || true
+  # Directories the install may have created; removed only when empty.
+  rmdir "${XDG_CONFIG_HOME:-$HOME/.config}/git" 2>/dev/null || true
+  # The zsh completion dump is regenerated on demand and holds nothing else.
+  cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/sandlight-dotfiles"
+  if [[ -d "$cache_dir" ]]; then
+    find "$cache_dir" -maxdepth 1 -type f -name 'zcompdump-*' -exec rm -f {} +
+    rmdir "$cache_dir" 2>/dev/null || true
+  fi
   log_info "Uninstall complete; state archived at $history_file"
 elif [[ "$UNINSTALL_INCOMPLETE" == "1" ]]; then
   log_warn "uninstall was incomplete; the state manifest was preserved"
