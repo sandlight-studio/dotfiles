@@ -9,6 +9,11 @@ on:
 permissions:
   contents: read
 
+# A newer push to the same ref supersedes the run in progress.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     name: Test (${{ matrix.os }})
@@ -17,25 +22,27 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+      HOMEBREW_NO_INSTALL_CLEANUP: "1"
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
       - name: Install test dependencies on Ubuntu
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y ripgrep shellcheck
+        run: sudo apt-get update && sudo apt-get install -y ripgrep shellcheck tmux zsh
       - name: Install test dependencies on macOS
         if: runner.os == 'macOS'
-        run: brew install ripgrep shellcheck
-      - name: Check Bash syntax
-        run: |
-          while IFS= read -r script; do bash -n "$script"; done < <(rg --files -g '*.sh')
-      - name: Run tests and safety checks
+        run: brew install ripgrep shellcheck tmux
+      - name: Run syntax, lint, tests, and safety checks
         run: bash scripts/check.sh
 
   secrets:
     name: Secret scan
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           fetch-depth: 0
       - name: Scan complete history
@@ -44,8 +51,9 @@ jobs:
   wsl2:
     name: WSL2 smoke test
     runs-on: windows-latest
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
       - name: Install Ubuntu 24.04 on WSL2
         shell: pwsh
         run: |
